@@ -8,7 +8,7 @@ Each group consisted of 5 members who responsible for creating PL/SQL queries to
 The hotel management system project seeked to improved a ficitious hotel company's business through the creation of PL/SQL procedures and functions that would be used in day-to-day business operations.
 Following the completion of this project, a demonstration was shown during class where the integration and collaboration of all members were required to successfully run said demonstration.
 
-(For more information please see the Microsoft Word Documents in this repository)
+(For more information please see the Microsoft Word documents in this repository)
 
 This program was created using SQL Developer and is compatible on any device or environment with access to SQL Developer.
 
