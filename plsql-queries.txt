@@ -1,0 +1,1026 @@
+/************************************************
+Member 1
+************************************************/
+SET SERVEROUTPUT ON;
+
+create or replace PROCEDURE addhotel(
+    hotel_name IN VARCHAR,
+    hotel_street IN varchar,
+    hotel_city IN varchar,
+    hotel_state IN CHAR,           --take in user parameters
+    hotel_zip IN VARCHAR,
+    hotel_phone IN VARCHAR,
+    hotel_status IN VARCHAR)
+IS
+    ht_single number;
+    ht_double number;                 --create counter variables for FOR loops
+    ht_suite number;
+    ht_conference number;
+
+BEGIN
+    INSERT INTO hotels VALUES
+        (
+            hotel_id_seq.nextval,       --This will create a new entry into the hotels table
+            hotel_name,
+            hotel_street,
+            hotel_city,
+            hotel_state,
+            hotel_zip,
+            hotel_phone,
+            hotel_status
+        )   ;
+  dbms_output.put_line('A new hotel has been added');
+    FOR ht_single IN 1..50 LOOP          --FOR LOOP to create 50 single rooms in the P_hotels_rooms table
+        INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                hotel_id_seq.currval,
+                'Single'
+            );
+    END LOOP;
+        FOR ht_double IN 1..20 LOOP      --FOR LOOP to create 20 double rooms in the P_hotels_rooms
+        INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                hotel_id_seq.currval,
+                'Double'
+            );
+    END LOOP;
+        FOR ht_suite IN 1..5 LOOP        --FOR LOOP to create 5 suite rooms in the P_hotels_rooms
+        INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                hotel_id_seq.currval,
+                'Suite'
+            );
+    END LOOP;
+        FOR ht_conference IN 1..2 LOOP   --FOR LOOP to create 2 conference rooms in the P_hotels_rooms
+        INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                hotel_id_seq.currval,
+                'Conference'
+            );
+    END LOOP;
+END;
+
+create or replace PROCEDURE addRoom (
+    hot_name IN varchar2,                    -- Take in user values
+    room_type IN varchar2,
+    room_amount IN INT )
+IS
+    num_rooms_counter number;                -- create variables.
+    h_id number;
+
+BEGIN
+
+    SELECT hotel_id INTO h_id FROM hotels     -- Fill h_id with the hotel id that rooms are being added to
+        WHERE hotel_name = hot_name;
+    CASE                                            -- Case to identify what should be happen
+    WHEN UPPER(room_type) LIKE UPPER('%Suite%')  -- compare user room type to create rooms with the matching value
+    THEN
+        FOR num_rooms_counter IN 1..room_amount LOOP    --for loop to make the amount of rooms the user wants to add
+            INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                h_id,
+                room_type
+            );
+        END LOOP;
+
+    WHEN UPPER(room_type) LIKE UPPER('%Single%') -- compare user room type to create rooms with the matching value
+    THEN
+        FOR num_rooms_counter IN 1..room_amount LOOP    --for loop to make the amount of rooms the user wants to add
+            INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                h_id,
+                room_type
+            );
+        END LOOP;
+
+    WHEN UPPER(room_type) LIKE UPPER('%Double%') -- compare user room type to create rooms with the matching value
+    THEN
+        FOR num_rooms_counter IN 1..room_amount LOOP    --for loop to make the amount of rooms the user wants add
+            INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                h_id,
+                room_type
+            );
+        END LOOP;
+
+    WHEN UPPER(room_type) LIKE UPPER('%Conference%') -- compare user room type to create rooms with the matching value
+    THEN
+        FOR num_rooms_counter IN 1..room_amount LOOP    --for loop to make the amount of rooms the user wants to add
+            INSERT INTO rooms VALUES
+            (
+                room_id_seq.nextval,
+                h_id,
+                room_type
+            );
+        END LOOP;
+    END CASE;
+END;
+
+
+create or replace PROCEDURE SellHotel(h_name varchar2) --asks for a hotel name
+As
+Begin
+Update hotels
+Set hotel_status = 'Sold' --changes status of hotel to sold
+Where hotel_name = h_name;
+dbms_output.put_line('Sold'); --outputs sold
+Exception
+when others then
+DBMS_output.put_line('An error occurred'); --If hotel id doesn't match or wrong input entered
+End;
+
+
+create or replace PROCEDURE FindHotel(ht_name IN VARCHAR2) --ask for hotel name
+IS
+ ht_id  NUMBER;
+BEGIN
+ SELECT hotel_id --pass hotel_id into h_id
+ INTO ht_id
+ FROM hotels
+ WHERE hotel_name = ht_name;  --condition for when to pass value
+ dbms_output.put_line('Hotel ID: ' || ht_id);
+END;
+
+
+create or replace PROCEDURE viewInfoByState(
+         h_state IN VARCHAR2) AS   --user to input state they want to view info for
+         CURSOR someRow IS     -- creation of cursor
+         SELECT * FROM hotels, rooms
+         WHERE hotel_state = h_state;
+BEGIN
+
+For SomeRow IN (Select hotel_name, hotel_street, phone_number,room_type
+From Hotels, Rooms
+Where hotels.hotel_id = rooms.hotel_id AND
+      hotel_state = h_state)
+LOOP
+     DBMS_OUTPUT.PUT_LINE('Hotel_name: '  ||SomeRow.hotel_name);    --output statement for when user inputs state to search from
+     DBMS_OUTPUT.PUT_LINE('Hotel_Address: '  ||SomeRow.hotel_street);
+     DBMS_OUTPUT.PUT_LINE('hotel_phone: ' || SomeRow.phone_number);
+     DBMS_OUTPUT.PUT_LINE('Room_type: ' || SomeRow.Room_type);
+
+      DBMS_OUTPUT.PUT_LINE('---------------------------');
+   END LOOP;
+   EXCEPTION
+   WHEN NO_DATA_FOUND
+   THEN DBMS_OUTPUT.PUT_LINE('Error');
+   End;
+
+/************************************************
+Member 2
+************************************************/
+CREATE OR REPLACE PROCEDURE addGuest (guestName guests.guest_name%TYPE,
+                                      guestPhone guests.guest_phone%TYPE,
+                                      guestPayment guests.g_payment_details%TYPE)
+AS
+BEGIN
+    INSERT INTO guests
+    VALUES (GUEST_SEQ.nextval,
+            guestName,
+            guestPhone,
+            guestPayment);
+
+           DBMS_OUTPUT.PUT_LINE('Guest, ' || guestName || ' has been entered into the system');
+END;
+
+create or replace PROCEDURE new_reservation (guestName reservations.guest_name%TYPE,
+                                             roomType reservations.room_type%TYPE,
+                                             checkInDate reservations.check_in%TYPE,
+                                             checkOutDate reservations.check_out%TYPE,
+                                             reservationStatus reservations.reservation_status%TYPE,
+                                             hotelName hotels.hotel_name%TYPE)
+AS
+CURSOR hotel_cur
+IS
+SELECT hotel_status
+FROM hotels
+WHERE hotel_status = 'sold';
+
+hotel_stat hotel_cur%ROWTYPE;
+
+hotelId hotels.hotel_id%TYPE;
+roomId rooms.room_id%TYPE;
+guestId guests.guest_id%TYPE;
+
+BEGIN
+
+    SELECT hotel_id INTO hotelId
+    FROM hotels h
+    WHERE h.hotel_name = hotelName AND ROWNUM = 1;
+
+    SELECT room_id INTO roomId
+    FROM rooms r
+    WHERE r.hotel_id = hotelID AND ROWNUM = 1;
+
+    SELECT guest_id INTO guestId
+    FROM guests g
+    WHERE g.guest_name = guestName AND ROWNUM = 1;
+
+    OPEN hotel_cur;
+    FETCH hotel_cur INTO hotel_stat;
+    IF hotel_stat.hotel_status = 'sold' THEN
+        DBMS_OUTPUT.PUT_LINE('ERROR, this hotel has been sold');
+
+    ELSE
+        INSERT INTO Reservations
+        VALUES (RES_ID_SEQ.nextval,
+        guestId,
+        guestName,
+        roomType,
+        checkInDate,
+        checkOutDate,
+        hotelId,
+        roomID,
+        reservationStatus,
+        hotelName);
+
+
+        DBMS_OUTPUT.PUT_LINE('Reservation for, ' || guestName || 'has been created.');
+    END IF;
+
+END;
+
+
+CREATE OR REPLACE PROCEDURE find_reservation(guestNameInput guests.guest_name%TYPE)
+AS
+BEGIN
+DECLARE --declare the variables needed to store the info found through searching.
+    reservationId reservations.reservation_id%TYPE;
+    guestId reservations.guest_id%TYPE;
+    guestName reservations.guest_name%TYPE;
+    roomType reservations.room_type%TYPE;
+    checkInDate reservations.check_in%TYPE;
+    checkOutDate reservations.check_out%TYPE;
+    hotelId reservations.hotel_id%TYPE;
+    roomId reservations.room_id%TYPE;
+    reservationStatus reservations.reservation_status%TYPE;
+    hotelName reservations.hotel_name%TYPE;
+
+BEGIN
+SELECT * INTO reservationId, --find all the data where the reservation ID is in the reservations table
+              guestId,
+              guestName,
+              roomType,
+              checkInDate,
+              checkOutDate,
+              hotelId,
+              roomId,
+              reservationStatus,
+              hotelName
+FROM Reservations r
+WHERE r.guest_name = guestNameInput AND ROWNUM = 1;
+
+DBMS_OUTPUT.PUT_LINE('Reservation id: ' || reservationId);
+DBMS_OUTPUT.PUT_LINE('Guest ID: ' || guestId);
+DBMS_OUTPUT.PUT_LINE('Guest Name: ' || guestName);
+DBMS_OUTPUT.PUT_LINE('Room type: ' || roomType);
+DBMS_OUTPUT.PUT_LINE('Check in date: ' || checkInDate || ' ' || 'Check out date: ' || checkOutDate);
+DBMS_OUTPUT.PUT_LINE('Hotel ID: ' || hotelId);
+DBMS_OUTPUT.PUT_LINE('Room ID: ' || roomId);
+DBMS_OUTPUT.PUT_LINE('Reservation Status: ' || reservationStatus);
+DBMS_OUTPUT.PUT_LINE('Hotel name: ' || hotelName);
+DBMS_OUTPUT.PUT_LINE(' ');
+DBMS_OUTPUT.PUT_LINE('--Search complete--');
+
+END;
+END;
+
+CREATE OR REPLACE PROCEDURE cancel_reservation (guestName reservations.guest_name%TYPE)
+AS
+BEGIN
+
+    UPDATE reservations--update the reservations in the table with 'canceled' status
+    SET reservation_status = 'canceled'
+    WHERE guest_name = guestName;
+
+    DBMS_OUTPUT.PUT_LINE('Reservation for, ' || guestName || ' has been canceled successfuly!');
+
+END;
+
+
+CREATE OR REPLACE PROCEDURE showCancelations
+AS
+BEGIN
+DECLARE --declare the variables needed to store the info found through searching.
+
+    reservationId reservations.reservation_id%TYPE;
+    guestId reservations.guest_id%TYPE;
+    guestName reservations.guest_name%TYPE;
+    roomType reservations.room_type%TYPE;
+    checkInDate reservations.check_in%TYPE;
+    checkOutDate reservations.check_out%TYPE;
+    hotelId reservations.hotel_id%TYPE;
+    roomId reservations.room_id%TYPE;
+    reservationStatus reservations.reservation_status%TYPE;
+    hotelName reservations.hotel_name%TYPE;
+
+BEGIN
+SELECt * INTO reservationId, --find all the data where the status is canceled in the reservations table
+              guestId,
+              guestName,
+              roomType,
+              checkIndate,
+              checkOutDate,
+              hotelId,
+              roomId,
+              reservationStatus,
+              hotelName
+FROM reservations r
+WHERE r.reservation_status = 'canceled' AND ROWNUM = 1;
+
+DBMS_OUTPUT.PUT_LINE('Reservation id: ' || reservationId);
+DBMS_OUTPUT.PUT_LINE('Guest ID: ' || guestId);
+DBMS_OUTPUT.PUT_LINE('Guest name: ' || guestName);
+DBMS_OUTPUT.PUT_LINE('Room type: ' || roomType);
+DBMS_OUTPUT.PUT_LINE('Check in date: ' || checkInDate || ' ' || 'Check out date: ' || checkOutDate);
+DBMS_OUTPUT.PUT_LINE('Hotel ID: ' || hotelId);
+DBMS_OUTPUT.PUT_LINE('Room ID: ' || roomId);
+DBMS_OUTPUT.PUT_LINE('Reservation Status: ' || reservationStatus);
+DBMS_OUTPUT.PUT_LINE('Hotel name: ' || hotelName);
+DBMS_OUTPUT.PUT_LINE(' ');
+DBMS_OUTPUT.PUT_LINE('--Search complete--');
+
+END;
+END;
+
+/************************************************
+Member 3
+************************************************/
+
+/*This function was created to check availability for rooms although I was unable to integrate it to final deliverable*/
+create or replace function room_availability_boolean(hotel_id_param number, room_type_param varchar2,
+s_date date, e_date date)
+return boolean is
+
+    cursor reservation_cursor is --This cursor is used to hold and parse through reservations
+    select hotel_id, room_type, check_in_date, check_out_date
+    from reservations;
+
+    cursor rooms_cursor is --This cursor is for going through rooms
+    select hotel_id, room_type
+    from rooms
+    where room_type = room_type_param
+    and hotel_id = hotel_id_param;
+
+    res_row reservation_cursor%rowtype;
+    --here are the rowtypes for the two cursors
+    room_row rooms_cursor%rowtype;
+
+    rooms_reserved number;
+    total_rooms number;--These variables are used to hold the total number of reserved room, --total number of rooms, and roomsavailable
+    rooms_avail number;
+
+Begin
+  For room_row in rooms_cursor
+  loop
+    select count(room_type) --this for loop gets a total count of rooms
+    into total_rooms
+    from rooms
+    where hotel_id = hotel_id_param
+    and room_type = room_type_param;
+  end loop;
+
+  for res_row in reservation_cursor
+  loop
+    select count(room_type) --This loop as well gets a total count of reserved rooms
+    into rooms_reserved
+    from reservations
+    where hotel_id = hotel_id_param
+    and room_type = room_type_param
+    and check_in_date >= s_date
+    and check_out_date <= e_date;
+  end loop;
+
+    if rooms_reserved = null then
+    rooms_reserved := 0; --I had to add this in the event that a room type on a specific date was --not reserved
+    end if;
+
+    rooms_avail := total_rooms - rooms_reserved; --This quick calculation gets the number of rooms available based on total rooms- rooms reserved
+
+    if rooms_avail > 0 then --This is the whole point of the function...If rooms_avail has anything --other than zero then it returns true
+    return true;
+
+    else return false;
+
+    end if;
+end;
+
+create or replace procedure changeResDate(guestName_param varchar2/*res_id_param number*/,
+hotel_name_param varchar2/*find hotel_id*/,room_type_param varchar2, /*room_id_param number,*/
+new_res_sdate date, new_res_edate date )
+as
+    res_id_var number; --reservations variable to hold id
+    hotel_id_var number; --holds hotel_id
+    room_not_available exception;--exception for when rooms are unavailable
+
+Begin
+    dbms_output.put_line('This procedure changes the reservation check in and check out dates');
+
+    select hotel_id
+    into hotel_id_var--variable holds hotel_id
+    from hotels
+    where hotel_name = hotel_name_param;
+
+    select reservation_id
+    into res_id_var --variable holds reservation_id
+    from reservations
+    where guest_name = guestName_param
+    and room_type = room_type_param;
+
+    if room_availability_boolean(hotel_id_var, room_type_param ,new_res_sdate, new_res_edate) then-- this if statement calls function to check if a room is available
+    dbms_output.put_line('Your room is available on that date!');
+
+    update reservations --here is the update that will update the reservation date
+    set check_in = new_res_sdate, check_out = new_res_edate
+    where reservation_id = res_id_var;
+
+    else
+        raise room_not_available; -- if there isn't a room available it will throw this exception
+    end if;
+Exception
+    when room_not_available then --custom exception for no room
+    dbms_output.put_line('This room is already reserved for that date');
+
+    when No_data_found then --exception for no data
+    dbms_output.put_line('no data found.');
+End;
+/*
+This was a function I used for finding available rooms. Unfortunately, I was unable to integrate it
+*/
+create or replace function find_avail_room_num(hotel_id_param number,
+room_type_param varchar2, s_date date, e_date date)
+return number
+is
+    new_room_var number; --this is the variable that will be used as a place holder
+
+    cursor reservation_cursor is
+    select hotel_id, room_type, room_num, check_in_date, check_out_date
+    from reservations
+    where room_type = room_type_param
+    and check_in_date >= s_date
+    and check_out_date <= e_date; --This cursor is to go through reservations
+
+    cursor rooms_cursor is
+    select hotel_id, room_num, room_type
+    from rooms
+    where room_type = room_type_param
+    and hotel_id = hotel_id_param; --this cursor is for rooms
+
+    res_row reservation_cursor%rowtype;
+    room_row rooms_cursor%rowtype;
+
+Begin
+  For room_row in rooms_cursor --for loop to go through each room
+  loop
+    for res_row in reservation_cursor -- for loop to go through each reservation
+    loop
+        if(room_row.room_num = res_row.room_num) then
+            new_room_var := null; --if a room is equal to a reservation during the date the variable is null
+        else
+            new_room_var := room_row.room_num; --otherwise it is set to a available room
+        end if;
+    end loop;
+  end loop;
+  return new_room_var; --new room number is returned
+
+--This procedure is used to change the room type for a customer
+create or replace procedure change_Room_type(guest_name_param varchar2/*res_id_param number*/,current_room_num number/*change to room_id*/,
+room_type_param/*room wanted*/ varchar2, hotel_name_param varchar2/*hotel_id_param number*/, s_date date, e_date date)
+is
+    room_not_available exception; --exception for when the room is unavailable
+    new_room_var number; --variable for the new room number
+
+    hotel_id_var number;
+    res_id_var number;
+Begin
+    /*select hotel_id
+    into hotel_id_var
+    from hotels
+    where hotel_name = hotel_name_param;*/
+    hotel_id_var := findhotelid(hotel_name_param);
+    select reservation_id
+    into res_id_var
+    from reservations
+    where guest_name = guest_name_param
+    and room_num = current_room_num;
+    if room_availability_boolean(hotel_id_var, room_type_param ,s_date, e_date) then
+    dbms_output.put_line('Your new room is available!'); --this if statement calls one of my functions to find availability
+    new_room_var := find_avail_room_num(hotel_id_var, room_type_param, s_date, e_date);
+    --this variable calls find_avail_room if the if condition is met
+    update reservations --here is the update that will change the type and the room number
+    set room_type = room_type_param, room_num = new_room_var
+    where reservation_id = res_id_var;
+    dbms_output.put_line('Your new room is a ' || room_type_param);
+    dbms_output.put_line('Your new room number is ' || new_room_var);
+    else
+        raise room_not_available; -- if there isn't a room available it will throw this exception
+    end if;
+Exception
+    when room_not_available then --the exception tells the user the room isn't available
+        dbms_output.put_line('Unfortunately this room type is not available');
+End;
+
+--this function is used to find returns the hotel_id given a hotel name
+CREATE OR REPLACE Function FindHotelID(hotel_name_param varchar2)
+return number AS
+   h_id hotels.hotel_id%type; --this is used as the hotel variable
+BEGIN
+  SELECT hotel_id
+  INTO h_id --and this query is used to put the hotel_id into it
+  FROM hotels
+  WHERE hotel_name = hotel_name_param;
+  return h_id;
+END;
+
+  --Here is the procedure that takes in the hotel name and prints every reservation in that hotel
+create or replace procedure reservations_at_hotel(hotel_name_param IN varchar2)
+As
+    cursor res_cursor is
+    select reservation_id, guest_name, check_in_date, check_out_date, status
+    from reservations --here is the reservation cursor
+    where hotel_id = FindHotelID(hotel_name_param);--the function findhotelid is called here so as not to negate hard coded issues
+
+    res_row reservations%rowtype;
+    hotelID hotels.hotel_id%type;--here i the variable that will hold hotel id
+Begin
+    select hotel_id
+    into hotelID
+    from hotels
+    where hotel_id = FindHotelID(hotel_name_param); --same use of findhotelid function
+    dbms_output.put_line('This is a procedure that lists all reservations from hotel '
+    || hotel_name_param);
+    dbms_output.put_line('------------------------------------------------------------------');
+    For res_row in res_cursor
+    Loop --this loop will go through and print every reservation for a particular hotel
+        if hotelid = FindHotelID(hotel_name_param) then --this if statement checks if a reservation is canceled
+            if  res_row.status != 'cancelled' then
+            dbms_output.put_line('Reservation ID:' || res_row.reservation_id);
+            dbms_output.put_line('Guest:' || res_row.guest_name);
+            dbms_output.put_line('check in:' || res_row.check_in_date);
+            dbms_output.put_line('check out:' || res_row.check_out_date);
+            dbms_output.put_line('');
+            end if;
+        end if;
+    end loop;
+Exception
+    when no_data_found then--this is the exception that states that john doe doesn't exist in the system --this exception is printed when no data is found
+    dbms_output.put_line('Hotel: ' || hotel_name_param || ' does not appear to be in our system!');
+end;
+Script: 7c show reservations for H4
+Output:
+
+--this function is used to get all reservations under one guest
+create or replace function get_guest_id (Guest_name_param varchar2)
+return number as
+    guest_id_var number; --variable that will hold the guest_id
+Begin
+    select guest_id
+    into guest_id_var
+    from guests --this query is used to put guest_id in the id_var
+    where guest_name = guest_name_param;
+
+    return guest_id_var;--returns guest_id_var
+End;
+
+--This procedure gets all the reservations that are under a guest’s name
+create or replace procedure get_reservations_under_name(Guest_name_p varchar2) As
+    cursor res_cursor is
+        select reservation_id, room_type, check_in_date, check_out_date, Hotel_id, room_id
+        from reservations --Cursor for reservations row
+        where guest_id = get_guest_id(Guest_name_p);
+
+    res_row reservations%rowtype;
+    guestID guests.guest_id%type; --variable for guest ID
+Begin
+    select guest_id
+    into guestID
+    from guests--I simply had this select statement to check if the guest is valid
+    where guest_id = get_guest_id(Guest_name_p);--if not the exception is thrown.
+    dbms_output.put_line('This is a procedure to get a list of reservations for:' || guest_name_p);
+    dbms_output.put_line('---------------------------------------------------------------');
+    For res_row in res_cursor --this for loop prints out reservation details for each reservation
+    loop--this for loop will print out each reservation.
+        dbms_output.put_line('Reservation ID: ' || res_row.reservation_id);
+        dbms_output.put_line('check in: ' || res_row.check_in_date);
+        dbms_output.put_line('check out: ' || res_row.check_out_date);
+        dbms_output.put_line('HotelID: ' || res_row.hotel_id);
+        dbms_output.put_line('Room Type: ' || res_row.room_type);
+        dbms_output.put_line('Room number: ' || res_row.room_id);
+        dbms_output.put_line('');
+    end loop;
+Exception
+    when no_data_found then--this is the exception that states that john doe doesn't exist in the system
+    dbms_output.put_line(guest_name_p || ' does not appear to be in our system!');
+end;
+
+/*
+This is procedure 14 for the hotel project. It is a procedure that takes in a range of dates to give
+a monthly report of all forms of income from rooms and services
+Unfortunately I was unable to integrate into the final product
+What is shown below was taken from deliverable 3
+*/
+
+Create or replace procedure Monthly_Income_Report(beginning_of_month date, end_of_month date)
+is --I was unable to figure out how to code for just a parameter of month so
+--I made it a range of beginning and end of month
+
+	--this cursor is for services
+	CURSOR service_cursor is
+    	select service_type, service_date, service_rate
+    	from service_record
+    	where service_date >= beginning_of_month
+    	and service_date <= end_of_month;
+
+	--this cursor is for reservations
+	Cursor reservation_cursor is
+    	select room_type, Start_date, end_date, room_total
+    	from reservations
+    	where start_date >= beginning_of_month
+    	and end_date <= end_of_month;
+
+	reservation_row reservation_cursor%rowtype;
+
+	--all of these variable are to be put in the total for those types
+	total_single reservations.room_total%type;
+	total_double reservations.room_total%type;
+	total_suite reservations.room_total%type;
+	total_conf reservations.room_total%type;
+
+
+	service_row   service_cursor%rowtype;
+
+	--this is the same concept but for service types
+	total_Res service_record.service_rate%type;
+	total_movie service_record.service_rate%type;
+	total_laundry service_record.service_rate%type;
+
+	not_same_month exception;
+	--custom exception for when parameter are not the same month
+
+Begin
+	--if the months are not the same an exception is thrown
+  if (extract(month from beginning_of_month) != extract(month from end_of_month)) then
+	raise not_same_month;
+  end if;
+
+  dbms_output.put_line('Here is the monthly report between:');
+  dbms_output.put_line(beginning_of_month || ' and ' || end_of_month);
+  dbms_output.put_line(' ');
+  --this part is a header for the report
+  dbms_output.put_line('Rooms Total');
+  dbms_output.put_line('=======================');
+
+	for reservation_row in reservation_cursor
+   loop
+	select sum(room_total)
+	into total_single
+	from reservations
+	where room_type = 'single';
+ end loop;
+	dbms_output.put_line('Singles total is: $' || total_single);
+	--this loops and adds into the total_single variable to get the total amount
+
+	for reservation_row in reservation_cursor
+   loop
+	select sum(room_total)
+	into total_double
+	from reservations
+	where room_type = 'double';
+ end loop;
+	dbms_output.put_line('Doubles total is: $' || total_double);
+
+	for reservation_row in reservation_cursor
+   loop
+	select sum(room_total)
+	into total_suite
+	from reservations
+	where room_type = 'suite';
+ end loop;
+	dbms_output.put_line('Suite total is: $' || total_suite);
+
+	for reservation_row in reservation_cursor
+   loop
+	select sum(room_total)
+	into total_conf
+	from reservations
+	where room_type = 'conference room';
+ end loop;
+	dbms_output.put_line('Conference total is: $' || total_conf);
+
+	dbms_output.put_line(' ');
+
+
+  dbms_output.put_line('Sevices');
+  dbms_output.put_line('===========================');
+  for service_row in service_cursor
+  loop
+	select sum(service_rate)
+	into total_Res
+	from service_record
+	where service_type = 'Restaurant';
+ end loop;
+	dbms_output.put_line('Restaurant total is: $' || total_Res);
+
+  for service_row in service_cursor
+  loop
+	select sum(service_rate)
+	into total_movie
+	from service_record
+	where service_type = 'Movie Rental';
+  end loop;
+	dbms_output.put_line('Movie Rental total is: $' || total_movie);
+
+  for service_row in service_cursor
+  loop
+	select sum(service_rate)
+	into total_laundry
+	from service_record
+	where service_type = 'Laundry';
+  end loop;
+	dbms_output.put_line('Laundry total is: $' || total_laundry);
+Exception
+	when not_same_month then--this message is tells the user that the dates must be the same month
+	dbms_output.put_line('The dates must be in the same month');
+end;
+
+/************************************************
+Member 4
+************************************************/
+
+SET SERVEROUTPUT ON;
+--Jennifer Jung (Member 4)
+--Function for AddServiceToRes procedure
+CREATE OR REPLACE FUNCTION priceOfServ (inputType IN VARCHAR2)
+--this function will return the associated price when a service name is put in
+  RETURN NUMBER IS
+  getPrice NUMBER;
+  BEGIN
+  IF inputType ='Restaurant'
+    THEN getPrice := 20;
+  ELSIF inputType = 'Pay-per-view Movie'
+    THEN getPrice := 5;
+  ELSIF inputType = 'Laundry'
+    THEN getPrice := 10;
+  --IF/THEN statements for retrieving the correct value
+  END IF;
+    RETURN getPrice;
+  END;
+
+--Jennifer Jung (Member 4)
+--Question 15
+CREATE OR REPLACE PROCEDURE AddServiceToRes (
+  --input parameters to hold values into
+    ResID IN NUMBER,
+    ServType IN VARCHAR2,
+    ServDate IN DATE) AS
+    ServPrice NUMBER;
+    BEGIN
+    --the servPrice will hold value the function returns
+    --when a type of service is inputted into the procedure
+    servPrice := priceOfServ(servType);
+    --then values are all put into previously declared parameters or local variable (servPrice)
+        INSERT INTO Services
+            (Service_ID, Service_Type, Service_Price, Service_Date, Reservation_ID)
+        VALUES
+            (Service_Seq.NEXTVAL, ServType, ServPrice, ServDate, ResID);
+DBMS_OUTPUT.PUT_LINE('The service: '||servType||' has been added');
+    END;
+
+SET SERVEROUTPUT ON;
+--Jennifer Jung (Member 4)
+--Question 16
+CREATE OR REPLACE PROCEDURE ResServReport (
+  --This procedure displays all the services by name for a given reservation
+  ReserveID reservations.reservation_ID%type) IS
+  CURSOR ServiceCursor IS
+   SELECT *
+      FROM Services;
+  BEGIN
+    DBMS_OUTPUT.PUT_LINE('============================');
+    DBMS_OUTPUT.PUT_LINE('RESERVATION SERVICES REPORT');
+    DBMS_OUTPUT.PUT_LINE('    Reservation ID: '||ReserveID);
+    --print header and displays the reservation ID inputted
+    DBMS_OUTPUT.PUT_LINE('============================');
+    DBMS_OUTPUT.PUT_LINE('  List of Services Used:');
+    DBMS_OUTPUT.PUT_LINE('----------------------------');
+   FOR ServiceCursor IN
+   (SELECT *
+   FROM Services
+ WHERE Services.reservation_ID = ReserveID)
+ LOOP
+    DBMS_OUTPUT.PUT_LINE(ServiceCursor.Service_Type);
+    --this for loop will continue to print all the services by name when
+    --reserationID matches the declared parameter ReserveID
+  END LOOP;
+  EXCEPTION
+    WHEN NO_DATA_FOUND
+    THEN DBMS_OUTPUT.PUT_LINE('No services exist for this reservation.');
+    --Exception handling if no data can be found for the service
+  END;
+
+SET SERVEROUTPUT ON;
+--Jennifer Jung (Member 4)
+--Question 17
+CREATE OR REPLACE PROCEDURE SpecificServiceReport (service_name Services.service_type%type) IS
+-- input the name of the service to identify all the associated reservations that used the service
+    CURSOR servCursor IS
+        SELECT reservation_id
+        FROM Services
+        WHERE service_type=service_name;
+        servCursor_row servCursor%rowType;
+        --I did not end up using this cursor so it can be removed without creating errors
+    CURSOR resCursor IS
+        SELECT *
+        FROM reservations;
+        resCursor_row resCursor%rowType;
+        --this cursor will locate and fetch all the necessary values in reservations
+    S_ID NUMBER;
+    R_ID NUMBER;
+    --these variables were not used and can be removed as well without creating additional errors
+    BEGIN
+    DBMS_OUTPUT.PUT_LINE('============================');
+    DBMS_OUTPUT.PUT_LINE('SPECIFIC SERVICE REPORT');
+    dbms_output.put_line('Name of Service: '||service_name);
+    DBMS_OUTPUT.PUT_LINE('============================');
+    --a print header is not necessary but looks nice
+        FOR resCursor IN
+        (SELECT
+            DISTINCT reservations.reservation_id,
+            reservations.guest_name,
+            reservations.room_type,
+            reservations.check_in,
+            reservations.check_out,
+            reservations.reservation_status
+        FROM Services, reservations
+        WHERE
+        Services.reservation_id = reservations.reservation_id
+        AND Services.service_type = service_name)
+        --These variables are declared into the cursor so that we may call them in our loop
+        LOOP
+        dbms_output.put_line('');
+        dbms_output.put_line('Guest Name: '||resCursor.guest_name);
+        dbms_output.put_line('----------------------');
+        dbms_output.put_line(resCursor.room_type||' Room Booked');
+        dbms_output.put_line('Check-in on '||resCursor.check_in);
+        dbms_output.put_line('Check-out on '||resCursor.check_out);
+        dbms_output.put_line('Reservation status is '||resCursor.reservation_status);
+        dbms_output.put_line('Reservation ID: '||resCursor.reservation_id);
+        --print statements that retrieve all the values after the cursor has located them
+    END LOOP;
+    EXCEPTION
+    WHEN no_data_found
+    THEN DBMS_OUTPUT.PUT_LINE('Error. No data was found. Please try again.');
+END;
+
+SET SERVEROUTPUT ON;
+--Jennifer Jung (Member 4)
+--Question 18
+--to calculate/display the total service income in every reservation for its related hotel id
+CREATE OR REPLACE PROCEDURE TotalServicesIncomeReport (h_name IN hotels.hotel_name%TYPE) AS
+
+CURSOR findPrice IS
+SELECT * FROM Services;
+total_income NUMBER;
+
+BEGIN
+
+DBMS_OUTPUT.PUT_LINE('============================');
+DBMS_OUTPUT.PUT_LINE('TOTAL SERVICES INCOME REPORT');
+DBMS_OUTPUT.PUT_LINE('============================');
+DBMS_OUTPUT.PUT_LINE('Hotel name: '||h_name);
+FOR i in findPrice LOOP
+    SELECT sum(service_price) INTO total_income
+    FROM Services, reservations
+    WHERE Services.reservation_id = reservations.reservation_id
+    AND reservations.hotel_name = h_name;
+    END LOOP;
+        IF total_income IS NULL THEN
+        DBMS_OUTPUT.PUT_LINE('This hotel has no services associated.');
+        ELSE
+        DBMS_OUTPUT.PUT_LINE('Total income for all services: $'||total_income);
+        END IF;
+EXCEPTION
+    WHEN no_data_found
+    THEN DBMS_OUTPUT.PUT_LINE('Error. Please try again.');
+END;
+
+/************************************************
+Member 5
+************************************************/
+
+create or replace procedure Available_rooms_by_type(hotel_id in number) IS
+Cursor room_cursor is
+Select room_type, count(room_id) as room_count
+From rooms
+Where hotel_id = 4
+Group by room_type;
+Room_id room_cursor%rowtype;
+Begin
+For room_id in room_cursor
+Loop
+Dbms_output.put_line('Type of Room = ' || room_id.room_type);
+Dbms_output.put_line('Amount Available = '||room_id.room_count);
+End loop;
+End;
+
+create or replace PROCEDURE room_checkout_report(reservationID in reservations.reservation_id%type)
+is
+guest_fn guests.guest_fname%type;
+guest_ln guests.guest_lname%type;
+
+income_room_total number; -- hold the sum of a hotel room cost
+income_service_total number;
+
+CURSOR c_room is select * from rooms where rooms.room_id in (select reservations.room_id from reservations where reservation_id = reservationID);
+room_row c_room%rowtype;
+
+CURSOR c_service is select * from services where services.reservation_id = reservationID;
+service_row c_service%rowtype;
+begin
+select guests.guest_fname into guest_fn from guests where guests.guest_id in (select reservations.guest_id from reservations where reservation_id = reservationID);
+select guests.guest_lname into guest_ln from guests where guests.guest_id in (select reservations.guest_id from reservations where reservation_id = reservationID);
+select sum(services.service_cost) into income_service_total from services where services.reservation_id = reservationID;
+select sum(rooms.cost_of_room) into income_room_total from rooms where room_id in (select reservations.room_id from reservations where reservation_id = reservationID);
+
+dbms_output.put_line('Guest Name: ' || guest_fn||' '||guest_ln);
+dbms_output.put_line('Room Rent Information:');
+for room_row in c_room
+loop
+dbms_output.put_line('Room Reserved: '|| room_row.room_type);
+dbms_output.put_line('Cost Per Night = $'|| room_row.cost_of_room);
+end loop;
+dbms_output.put_line('Total Rent Due = $'|| income_room_total);
+dbms_output.put_line('Service Information:');
+dbms_output.put_line('Service Type - Service Cost -   	Service Date');
+
+for service_row in c_service
+loop
+dbms_output.put_line(service_row.service_name|| '   $'|| service_row.service_cost|| '  '|| service_row.service_date);
+end loop;
+dbms_output.put_line('Total Cost For Service = $'|| income_service_total);
+dbms_output.put_line('-------------------');
+dbms_output.put_line('Total Checkout Amount Due = $'|| (income_service_total + income_room_total) );
+dbms_output.put_line('-------------------');
+end;
+
+create or replace procedure Income_By_State_Report(state varchar2)
+as
+Cursor hotel_cost is
+SELECT rooms.room_type,
+SUM(rooms.cost_of_room) Total_Hotel_Cost
+FROM Hotels INNER JOIN ROOMS ON hotels.hotel_id = rooms.hotel_id
+inner join reservations on reservations.room_id = rooms.room_id
+WHERE hotels.hotel_state = UPPER(state)
+GROUP BY rooms.room_type, hotels.hotel_state;
+room_type rooms.room_type%type;
+total_room_cost number;
+
+Cursor cursor_service_cost is
+SELECT services.service_name,
+SUM(services.service_cost) Total_Service_Cost
+FROM Hotels INNER JOIN ROOMs ON hotels.hotel_id = rooms.hotel_id
+inner join reservations on reservations.room_id = rooms.room_id
+inner join services on reservations.reservation_id = services.reservation_id
+GROUP BY services.service_name, hotels.hotel_state;
+service_name services.service_name%type;
+service_cost number;
+total_room number;
+total_service_cost number;
+
+begin
+total_room := 0;
+total_service_cost := 0;
+
+dbms_output.put_line('Chosen State: '||state);
+
+open hotel_cost;
+loop
+fetch hotel_cost into room_type, total_room_cost;
+exit when
+hotel_cost%notfound;
+dbms_output.put_line(room_type || ': $'|| total_room_cost);
+total_room := total_room + total_room_cost;
+end loop;
+close hotel_cost;
+dbms_output.put_line('Total Room Cost: $'||total_room);
+dbms_output.put_line('');
+dbms_output.put_line('Services Provided:');
+
+open cursor_service_cost;
+loop
+fetch cursor_service_cost into service_name, service_cost;
+exit when cursor_service_cost%notfound;
+dbms_output.put_line(service_name || ': $'|| service_cost);
+total_service_cost := total_service_cost  + service_cost;
+end loop;
+close cursor_service_cost;
+dbms_output.put_line('Total Service Cost: $'||total_service_cost);
+dbms_output.put_line('Total Income By Chosen State: $'||(total_room+total_service_cost));
+end;

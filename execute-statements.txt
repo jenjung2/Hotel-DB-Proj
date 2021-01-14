@@ -1,0 +1,94 @@
+SET SERVEROUTPUT ON;
+
+--Member 1:
+execute  addhotel ('H1', 'Hilltop', 'New York', 'NY', '10001', '5555555555', 'owned');
+execute  addhotel ('H2', 'Brown', 'Baltimore', 'MD', '10002', '4344445555', 'owned');
+execute  addhotel ('H3', 'Road', 'San Francisco', 'CA', '55555', '2332332323', 'owned');
+execute  addhotel ('H4', 'Circle', 'Annapolis', 'MD', '40042', '6462332353', 'owned');
+execute  addhotel ('H5', 'Square', 'Baltimore', 'MD', '40042', '6002332353', 'owned');
+
+EXECUTE findhotel('H1');
+
+EXECUTE addroom ('H1', 'double', 10);
+EXECUTE addroom ('H2', 'Suite', 2);
+EXECUTE addroom ('H2', 'double', 5);
+EXECUTE addroom ('H4', 'conference hall', 1);
+EXECUTE addroom ('H5', 'conference hall', 1);
+
+EXECUTE SellHotel('H2');
+
+EXECUTE viewInfoByState('MD');
+
+--Member 2:
+
+execute addGuest ('John Smith','111-111-1111','Visa');
+execute addGuest ('Arnold Patterson','222-222-2222','Visa');
+execute addGuest ('Mary Wise','333-333-3333','Master Card');
+
+EXECUTE new_reservation('John Smith', 'Suite', '01-AUG-2020', '10-AUG-2020', 'active', 'H2');
+EXECUTE new_reservation('Arnold Patterson', 'Conference Hall', '01-JAN-2020', '05-JAN-2020', 'active', 'H1');
+EXECUTE new_reservation('Arnold Patterson', 'Conference Hall', '01-JAN-2020', '05-JAN-2020', 'active', 'H4');
+EXECUTE new_reservation('Mary Wise', 'Single', '10-JAN-2020', '15-JAN-2020', 'active', 'H4');
+EXECUTE new_reservation('Mary Wise', 'Double', '01-JAN-2020', '05-JAN-2020', 'active', 'H4');
+
+EXECUTE find_reservation('Arnold Patterson');
+
+EXECUTE cancel_reservation('Arnold Patterson');
+EXECUTE cancel_reservation('John Smith');
+
+EXECUTE showCancelations;
+
+
+--Member 3:
+exec changeresdate('Arnold Patterson','H4', 'Conference Hall','01-FEB-21','05-FEB-21');
+
+--exec change_room_type('Mary Wise', 'Single', 'H4');
+
+exec reservations_at_hotel('H4');
+
+exec get_reservations_under_name('Mary Wise');
+
+--Member 4: Jennifer Jung
+
+--Q8a. 6f is not a valid ID data type
+--For reservation in item 6f add restaurant services for each day
+--Assuming 6f is Reservation_ID = 3
+EXECUTE AddServiceToRes (3, 'Restaurant', '10-JAN-20');
+EXECUTE AddServiceToRes (3, 'Restaurant', '11-JAN-20');
+EXECUTE AddServiceToRes (3, 'Restaurant', '12-JAN-20');
+EXECUTE AddServiceToRes (3, 'Restaurant', '13-JAN-20');
+EXECUTE AddServiceToRes (3, 'Restaurant', '14-JAN-20');
+EXECUTE AddServiceToRes (3, 'Restaurant', '15-JAN-20');
+
+--Q8b. 6g is not a valid data type
+--For reservation in item 6g add restaurant services for each day
+--Assuming 6g is Reservation_ID = 4
+EXECUTE AddServiceToRes (4, 'Restaurant', '01-JAN-20');
+EXECUTE AddServiceToRes (4, 'Restaurant', '02-JAN-20');
+EXECUTE AddServiceToRes (4, 'Restaurant', '03-JAN-20');
+EXECUTE AddServiceToRes (4, 'Restaurant', '04-JAN-20');
+EXECUTE AddServiceToRes (4, 'Restaurant', '05-JAN-20');
+
+--For reservation in item 6g add 1 pay-per-view movie for the first day
+EXECUTE AddServiceToRes (4, 'Pay-per-view Movie', '01-JAN-20');
+
+--For reservation in item 6g add laundry service for one day (of your choice)
+EXECUTE AddServiceToRes (4, 'Laundry', '03-JAN-20');
+
+SELECT * FROM Hotel_Service;
+
+--Show Reservation Services Report for Mary Wise’s reservation on Jan 1 – 5
+EXECUTE ResServReport (4);
+
+--Show report for restaurant services
+EXECUTE SpecificServiceReport ('Restaurant');
+
+--Show total services income report for hotel H4
+--Because the name of a hotel can have different IDs, input the hotel ID
+EXECUTE TotalServicesIncomeReport ('H4');
+
+—Member 5:
+
+Execute ShowAvailableRooms('h4');
+Execute RoomCheckOutReport ('3');
+ExecuteTotalIncomeStateReport('MD');

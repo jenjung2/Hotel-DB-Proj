@@ -1,0 +1,115 @@
+CREATE TABLE Hotels (
+    hotel_id NUMBER,
+    hotel_name VARCHAR2(35),
+    hotel_street VARCHAR2(50),
+    hotel_city VARCHAR2(50),
+    hotel_state CHAR(2),
+    hotel_zip VARCHAR2(10),
+    hotel_phone VARCHAR2(35),
+    hotel_status VARCHAR2(10),
+        PRIMARY KEY (hotel_id)
+);
+
+CREATE TABLE Rooms (
+    room_id NUMBER,
+    room_type VARCHAR2(20),
+    room_number NUMBER,
+    hotel_id NUMBER,
+    PRIMARY KEY (room_id),
+    FOREIGN KEY (hotel_id) REFERENCES Hotels(hotel_id)
+);
+
+CREATE TABLE Guests
+(
+    guest_id NUMBER,
+    guest_name VARCHAR2(35),
+    guest_phone VARCHAR2(35),
+    guest_payment_details VARCHAR2(20),
+    PRIMARY KEY (guest_id)
+);
+
+CREATE TABLE Discounts (
+    discount_id number,
+    discount_type varchar2(20),
+    discount_rate number,
+        PRIMARY KEY (discount_id)
+);
+
+CREATE TABLE Invoices (
+    invoice_id number,
+    invoice_total DECIMAL(7,2),
+    payment_date DATE,
+    payment_type varchar2(20),
+    discount_id number,
+    guest_id NUMBER,
+        PRIMARY KEY (invoice_id),
+        FOREIGN KEY (discount_id) REFERENCES Discounts(discount_id),
+        FOREIGN KEY (guest_id) REFERENCES Guests(guest_id)
+);
+
+CREATE TABLE Reservations (
+    Reservation_id NUMBER,
+    Check_in DATE,
+    Check_out DATE,
+    Reservation_status VARCHAR2(10),
+    Hotel_id NUMBER,
+    Guest_id NUMBER,
+    Room_id NUMBER,
+    PRIMARY KEY (reservation_id),
+    FOREIGN KEY (hotel_id) REFERENCES Hotels(hotel_id),
+    FOREIGN KEY (guest_id) REFERENCES Guests(guest_id),
+    FOREIGN KEY (room_id) REFERENCES Rooms(room_id)
+);
+
+CREATE TABLE Services (
+    service_id NUMBER,
+    service_type VARCHAR2(20),
+    service_price DECIMAL(7,2),
+    service_date DATE,
+    reservation_ID NUMBER,
+        PRIMARY KEY (service_id),
+        FOREIGN KEY (reservation_id) REFERENCES Reservations(reservation_id)
+);
+
+/* SEQUENCES */
+CREATE SEQUENCE guest_id_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE hotel_id_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE invoice_id_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE res_id_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE room_id_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE room_num_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE service_id_seq
+MINVALUE 1
+NOMAXVALUE
+START WITH 1
+INCREMENT BY 1;
